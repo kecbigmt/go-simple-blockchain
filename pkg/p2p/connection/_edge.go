@@ -6,6 +6,7 @@ import (
   "net"
   "time"
   "sync"
+  "errors"
   "strings"
   "context"
 
@@ -33,7 +34,7 @@ func NewEdgeConnectionManager(host string, port int) (cm ConnectionManager, err 
   selfAddr := fmt.Sprintf("%s:%d", host, port)
   logCh := logch.NewLogCh()
   mm := msg.NewManager()
-  addMsgBytes, err := mm.Build(msg.MSG_ADD_AS_EDGE, port, nil)
+  addMsgBytes, err := mm.Build(msg.MSG_ADD_EDGE, port, nil)
   if err != nil {
     err = fmt.Errorf("cm.messageManager.Build: %s", err)
     return
@@ -81,7 +82,7 @@ func (cm *edgeConnectionManager) JoinNetwork(address string) error {
 
 func (cm *edgeConnectionManager) ConnectionClose() error {
   if cm.joinedNodeAddress != "" {
-    msgBytes, err := cm.messageManager.Build(msg.MSG_REMOVE, cm.port, nil)
+    msgBytes, err := cm.messageManager.Build(msg.MSG_REMOVE_CORE, cm.port, nil)
     if err != nil {
       return fmt.Errorf("cm.messageManager.Build: %s", err)
     }
@@ -99,7 +100,6 @@ func (cm *edgeConnectionManager) LogCh() *logch.LogCh {
 // 指定されたノードに対してメッセージを送信するメソッド。
 func (cm *edgeConnectionManager) sendMsg(address string, msgBytes []byte) error {
   conn, err := net.Dial("tcp", address)
-  // 接続エラー時には他のCoreノードに移住する
   if err != nil {
     cm.removeCoreNode(address)
     return fmt.Errorf("Connection failed for node: %s\n", address)
@@ -127,9 +127,9 @@ func (cm *edgeConnectionManager) reconnect() error {
       }
       return nil
     }
-    return fmt.Errorf("Failed to reconnect with all core nodes in list")
+    return errors.New("Failed to reconnect with all core nodes in list")
   } else {
-    return fmt.Errorf("No core node to reconnect")
+    return errors.New("No core node to reconnect")
   }
 }
 
