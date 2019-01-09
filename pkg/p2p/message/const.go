@@ -8,13 +8,13 @@ const (
 type MsgType int
 
 const (
-  MSG_ADD MsgType = iota
-  MSG_REMOVE
+  MSG_ADD_CORE MsgType = iota
+  MSG_REMOVE_CORE
   MSG_CORE_LIST
   MSG_REQUEST_CORE_LIST
   MSG_PING
-  MSG_ADD_AS_EDGE
-  MSG_REMOVE_AS_EDGE
+  MSG_ADD_EDGE
+  MSG_REMOVE_EDGE
 )
 
 type Reason int

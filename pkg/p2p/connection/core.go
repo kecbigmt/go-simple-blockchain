@@ -32,7 +32,7 @@ func NewCoreConnectionManager(host string, port int) (cm ConnectionManager, err 
   selfAddr := fmt.Sprintf("%s:%d", host, port)
   logCh := logch.NewLogCh()
   mm := msg.NewManager()
-  addMsgBytes, err := mm.Build(msg.MSG_ADD, port, nil)
+  addMsgBytes, err := mm.Build(msg.MSG_ADD_CORE, port, nil)
   if err != nil {
     err = fmt.Errorf("cm.messageManager.Build: %s", err)
     return
@@ -77,7 +77,7 @@ func (cm *coreConnectionManager) JoinNetwork(address string) error {
 
 func (cm *coreConnectionManager) ConnectionClose() error {
   if cm.joinedNodeAddress != "" {
-    msgBytes, err := cm.messageManager.Build(msg.MSG_REMOVE, cm.port, nil)
+    msgBytes, err := cm.messageManager.Build(msg.MSG_REMOVE_CORE, cm.port, nil)
     if err != nil {
       return fmt.Errorf("cm.messageManager.Build: %s", err)
     }
@@ -192,8 +192,8 @@ func (cm *coreConnectionManager) handleMessage(conn net.Conn) {
   node := fmt.Sprintf("%s:%d", nodeIP, message.Port)
 
   switch message.MsgType {
-  case msg.MSG_ADD:
-    cm.logCh.Infof("MSG_ADD from: %s\n", node)
+  case msg.MSG_ADD_CORE:
+    cm.logCh.Infof("MSG_ADD_CORE from: %s\n", node)
     // リスト更新（Peer追加）
     cm.addCoreNode(node)
     // 最新リストのブロードキャスト
@@ -202,8 +202,8 @@ func (cm *coreConnectionManager) handleMessage(conn net.Conn) {
       return
     }
 
-  case msg.MSG_ADD_AS_EDGE:
-    cm.logCh.Infof("MSG_ADD_AS_EDGE from: %s\n", node)
+  case msg.MSG_ADD_EDGE:
+    cm.logCh.Infof("MSG_ADD_EDGE from: %s\n", node)
     // リスト更新（Peer追加）
     cm.addEdgeNode(node)
     // 最新のCoreNodeListを共有
@@ -211,13 +211,13 @@ func (cm *coreConnectionManager) handleMessage(conn net.Conn) {
       cm.logCh.Warningf("failed to send core node list: m.sendCoreNodeList: %s", err)
     }
 
-  case msg.MSG_REMOVE_AS_EDGE:
-    cm.logCh.Infof("MSG_REMOVE_AS_EDGE from: %s\n", node)
+  case msg.MSG_REMOVE_EDGE:
+    cm.logCh.Infof("MSG_REMOVE_EDGE from: %s\n", node)
     // リスト更新（Peer削除）
     cm.removeEdgeNode(node)
 
-  case msg.MSG_REMOVE:
-    cm.logCh.Infof("MSG_REMOVE from: %s\n", node)
+  case msg.MSG_REMOVE_CORE:
+    cm.logCh.Infof("MSG_REMOVE_CORE from: %s\n", node)
     // リスト更新（Peer削除）
     cm.removeCoreNode(node)
     // 最新リストのブロードキャスト
