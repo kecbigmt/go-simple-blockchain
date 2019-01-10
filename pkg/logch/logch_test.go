@@ -4,7 +4,7 @@ import (
   "fmt"
   "testing"
 
-  "github.com/kecbigmt/go-simple-bitcoin/pkg/logch"
+  "github.com/kecbigmt/go-simple-blockchain/pkg/logch"
 )
 
 const (
